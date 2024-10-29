@@ -351,6 +351,7 @@ impl AppendableChain {
         Ok(())
     }
 
+    #[allow(clippy::type_complexity)]
     fn setup_prefetch<N, E>(
         externals: &TreeExternals<N, E>,
     ) -> (

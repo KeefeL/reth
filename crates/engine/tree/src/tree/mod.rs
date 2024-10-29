@@ -2278,9 +2278,11 @@ where
             // different view of the database.
             let persistence_in_progress = self.persistence_state.in_progress();
             if !persistence_in_progress {
-                state_root_result = match self
-                    .compute_state_root_parallel(block.parent_hash, &hashed_state, missing_leaves_cache)
-                {
+                state_root_result = match self.compute_state_root_parallel(
+                    block.parent_hash,
+                    &hashed_state,
+                    missing_leaves_cache,
+                ) {
                     Ok((state_root, trie_output)) => Some((state_root, trie_output)),
                     Err(ParallelStateRootError::Provider(ProviderError::ConsistentView(error))) => {
                         debug!(target: "engine", %error, "Parallel state root computation failed consistency check, falling back");
@@ -2388,7 +2390,8 @@ where
         // Extend with block we are validating root for.
         input.append_ref(hashed_state);
 
-        ParallelStateRoot::new(consistent_view, input).incremental_root_with_updates_and_cache(missing_leaves_cache)
+        ParallelStateRoot::new(consistent_view, input)
+            .incremental_root_with_updates_and_cache(missing_leaves_cache)
     }
 
     /// Handles an error that occurred while inserting a block.
@@ -2632,6 +2635,7 @@ where
         Ok(())
     }
 
+    #[allow(clippy::type_complexity)]
     fn setup_prefetch(
         &self,
     ) -> (
