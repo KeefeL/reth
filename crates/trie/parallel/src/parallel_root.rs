@@ -181,29 +181,18 @@ where
                         // be a possibility of re-adding a non-modified leaf to the hash builder.
                         None => {
                             tracker.inc_missed_leaves();
-                            if let Some(cache) = miss_leaves_cache.clone() {
-                                if let Some(value) = cache.get(&hashed_address) {
-                                    let (root, updates) = value.value();
-                                    (*root, 0usize, updates.clone())
-                                } else {
-                                    StorageRoot::new_hashed(
-                                        trie_cursor_factory.clone(),
-                                        hashed_cursor_factory.clone(),
-                                        hashed_address,
-                                        #[cfg(feature = "metrics")]
-                                        self.metrics.storage_trie.clone(),
-                                    )
-                                    .calculate(retain_updates)?
-                                }
-                            } else {
-                                StorageRoot::new_hashed(
+                            match miss_leaves_cache.clone().and_then(|cache| {
+                                cache.get(&hashed_address).map(|value| value.clone())
+                            }) {
+                                Some((root, updates)) => (root, 0usize, updates),
+                                None => StorageRoot::new_hashed(
                                     trie_cursor_factory.clone(),
                                     hashed_cursor_factory.clone(),
                                     hashed_address,
                                     #[cfg(feature = "metrics")]
                                     self.metrics.storage_trie.clone(),
                                 )
-                                .calculate(retain_updates)?
+                                .calculate(retain_updates)?,
                             }
                         }
                     };
